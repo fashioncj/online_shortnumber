@@ -2,12 +2,14 @@ package com.online.shortphonenumshow;
 
 
 
+import android.R;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
+import android.graphics.PixelFormat;
 import android.net.ConnectivityManager;
 import android.os.IBinder;
 import android.provider.ContactsContract;
@@ -70,6 +72,9 @@ public class Online_shortservise extends Service{
     	private Context context;
     	private WindowManager wm;
     	private TextView tv;
+    	//---
+    	private MyTextView dView;
+    	int [] mParams ;
     	
     	public TelListener(Context context){
     		this.context = context;
@@ -83,32 +88,53 @@ public class Online_shortservise extends Service{
     			Log.i("tel","2");
     			wm = (WindowManager)context.getApplicationContext().getSystemService(Context.WINDOW_SERVICE);  
     			WindowManager.LayoutParams params = new WindowManager.LayoutParams();  
-    			params.type = WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY;  
-    			//params.type = WindowManager.LayoutParams.TYPE_PHONE; 
+    			//params.type = WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY;  
+    			params.type = WindowManager.LayoutParams.TYPE_SYSTEM_ERROR; 
     			params.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE; 
+    			//params.flags=WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;
+    			//params.flags=WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
     			Log.i("tel",incomingNumber); 
     			params.width = WindowManager.LayoutParams.WRAP_CONTENT;  
-    			params.height = WindowManager.LayoutParams.WRAP_CONTENT;  
+    			params.height = WindowManager.LayoutParams.WRAP_CONTENT; 
+    			//params.width=WindowManager.LayoutParams.FILL_PARENT;
+    			//params.height=WindowManager.LayoutParams.FILL_PARENT;
                 //params.format = PixelFormat.RGBA_8888;
     			
     			if(incomingNumber.length()>1){
     			tv = new TextView(context); 
     			tv.setOnTouchListener(new move());
     			tv.setTextSize(20);
+    			tv.setTextColor(getResources().getColor(com.online.shortphonenumshow.R.color.shandahong));
+    			tv.setBackgroundColor(getResources().getColor(com.online.shortphonenumshow.R.color.cornsilk));
     			String ansString=shornum(incomingNumber);
     			Log.i("1", ansString);
     			tv.setText("短号提示：\n" + ansString);
     			
-    			wm.addView(tv, params);}
+    			wm.addView(tv, params);
+//    			dView=new MyTextView(context, null);
+//    			dView.setOnTouchListener(null);
+//    			dView.setTextSize(20);
+//    			String ansString=shornum(incomingNumber);
+//    			Log.i("1", ansString);
+//    			dView.setText("短号提示：\n" + ansString);
+//    			
+//    			wm.addView(dView, params);
+    			
+    			}
+    				
     			
     					
     		}else if(state == TelephonyManager.CALL_STATE_IDLE){
     			if(wm != null){
     				Log.i("tel","3");
     				wm.removeView(tv);
+   				//wm.removeView(dView);
     			}
     		}
     	}
+    	
+    	//==
+    	
     }
     
     

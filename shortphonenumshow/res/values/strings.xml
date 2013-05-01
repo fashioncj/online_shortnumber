@@ -4,5 +4,7 @@
     <string name="app_name">短号显示</string>
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
+    <string name="welcome">欢迎使用短号提示，该软件可以在来电时显示已经在您通讯录里面号码的短号姓名</string>
+    <string name="share">喜欢~分享给好友</string>
 
 </resources>
