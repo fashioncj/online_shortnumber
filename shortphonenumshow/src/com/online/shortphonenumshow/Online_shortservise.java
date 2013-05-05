@@ -2,7 +2,9 @@ package com.online.shortphonenumshow;
 
 
 
-import android.R;
+
+import android.R.menu;
+import android.app.KeyguardManager;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -16,10 +18,13 @@ import android.provider.ContactsContract;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.WindowManager;
 import android.widget.TextView;
 
-public class Online_shortservise extends Service{
+public class Online_shortservise extends Service {
 
 	@Override
 	public IBinder onBind(Intent intent) {
@@ -66,15 +71,15 @@ public class Online_shortservise extends Service{
 	
     };
     
-    public class TelListener extends PhoneStateListener {
+    public class TelListener extends PhoneStateListener implements OnClickListener {
     	
     	
     	private Context context;
     	private WindowManager wm;
     	private TextView tv;
     	//---
-    	private MyTextView dView;
-    	int [] mParams ;
+        private MyTextView mv;
+        boolean flag=true;
     	
     	public TelListener(Context context){
     		this.context = context;
@@ -84,33 +89,83 @@ public class Online_shortservise extends Service{
     	public void onCallStateChanged(int state, String incomingNumber) {
     		// TODO Auto-generated method stub
     		//super.onCallStateChanged(state, incomingNumber);
+    		
     		if(state == TelephonyManager.CALL_STATE_RINGING){
     			Log.i("tel","2");
     			wm = (WindowManager)context.getApplicationContext().getSystemService(Context.WINDOW_SERVICE);  
-    			WindowManager.LayoutParams params = new WindowManager.LayoutParams();  
+    			WindowManager.LayoutParams params = new WindowManager.LayoutParams(); 
+    			//islock
+    			if(islock()){
+    				params.type = WindowManager.LayoutParams.TYPE_SYSTEM_ERROR;  
+    				params.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE; 
+    				  
+    				params.width = WindowManager.LayoutParams.WRAP_CONTENT;  
+    				params.height = WindowManager.LayoutParams.WRAP_CONTENT;
+    				Log.i("tel",incomingNumber); 
+        			if(incomingNumber.length()>1){
+        			tv = new TextView(context); 
+        			tv.setTextSize(20);
+        			tv.setTextColor(getResources().getColor(com.online.shortphonenumshow.R.color.shandahong));
+        			tv.setBackgroundColor(getResources().getColor(com.online.shortphonenumshow.R.color.cornsilk));
+        			String ansString=shornum(incomingNumber);
+        			Log.i("1", ansString);
+        			tv.setText("短号提示：\n" + ansString);
+        			flag=true;
+        			wm.addView(tv, params);
+        			}
+    			}
+    			else{
     			//params.type = WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY;  
-    			params.type = WindowManager.LayoutParams.TYPE_SYSTEM_ERROR; 
-    			params.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE; 
+    			
+ //   			params.type = WindowManager.LayoutParams.TYPE_SYSTEM_ERROR; 
+ //   			params.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE; 
     			//params.flags=WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;
     			//params.flags=WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
-    			Log.i("tel",incomingNumber); 
+    			
+    			//moveable
+ 
+    			params = ((FloatApplication) getApplication()).getWindowParams(); 
+    			//params.format=1;
+   			    params.type = WindowManager.LayoutParams.TYPE_PRIORITY_PHONE;
+ //   			params.type=WindowManager.LayoutParams.TYPE_SYSTEM_ALERT;
+//    			params.flags = params.flags | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS;
+    			params.flags=params.flags|WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH;//yes
+//    			params.alpha = 1.0f;  
+//    	        
+    		   //  params.gravity=Gravity.CENTER_HORIZONTAL|Gravity.CENTER_VERTICAL;   //调整悬浮窗口至左上角   
+
+    			params.gravity=Gravity.LEFT|Gravity.TOP;
+    			//    		        //以屏幕左上角为原点，设置x、y初始值   
+    		    // params.flags=WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;
+    		     params.flags=WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;//yes
+    		     params.y=Gravity.CENTER_VERTICAL;  
+    		     params.x=Gravity.CENTER_HORIZONTAL; 
+//    		     params.width=140;
+//    		     params.height=140;
+    			
+    		
     			params.width = WindowManager.LayoutParams.WRAP_CONTENT;  
     			params.height = WindowManager.LayoutParams.WRAP_CONTENT; 
     			//params.width=WindowManager.LayoutParams.FILL_PARENT;
     			//params.height=WindowManager.LayoutParams.FILL_PARENT;
                 //params.format = PixelFormat.RGBA_8888;
     			
+    			//gongneng
+    			
+    			Log.i("tel",incomingNumber); 
     			if(incomingNumber.length()>1){
-    			tv = new TextView(context); 
-    			tv.setOnTouchListener(new move());
-    			tv.setTextSize(20);
-    			tv.setTextColor(getResources().getColor(com.online.shortphonenumshow.R.color.shandahong));
-    			tv.setBackgroundColor(getResources().getColor(com.online.shortphonenumshow.R.color.cornsilk));
+//    			tv = new TextView(context); 
+//    			//tv.setOnTouchListener(new move());
+//    			//tv.onTouchEvent();
+//    			tv.setTextSize(20);
+//    			tv.setTextColor(getResources().getColor(com.online.shortphonenumshow.R.color.shandahong));
+//    			tv.setBackgroundColor(getResources().getColor(com.online.shortphonenumshow.R.color.cornsilk));
     			String ansString=shornum(incomingNumber);
     			Log.i("1", ansString);
-    			tv.setText("短号提示：\n" + ansString);
+//    			tv.setText("短号提示：\n" + ansString);
+//    			
+//    			wm.addView(tv, params);
     			
-    			wm.addView(tv, params);
 //    			dView=new MyTextView(context, null);
 //    			dView.setOnTouchListener(null);
 //    			dView.setTextSize(20);
@@ -119,19 +174,37 @@ public class Online_shortservise extends Service{
 //    			dView.setText("短号提示：\n" + ansString);
 //    			
 //    			wm.addView(dView, params);
-    			
+    				mv=new MyTextView(getApplicationContext());
+    				mv.setOnClickListener(this);
+    				mv.setBackgroundColor(getResources().getColor(com.online.shortphonenumshow.R.color.cornsilk));
+    				mv.setText("短号提示：\n" + ansString);
+    				mv.setTextColor(getResources().getColor(com.online.shortphonenumshow.R.color.shandahong));
+    				mv.setTextSize(20);
+    				flag=false;
+    				wm.addView(mv, params);
+
+    			}
     			}
     				
     			
     					
-    		}else if(state == TelephonyManager.CALL_STATE_IDLE){
+    		}
+    		else if(state == TelephonyManager.CALL_STATE_IDLE){
     			if(wm != null){
     				Log.i("tel","3");
-    				wm.removeView(tv);
-   				//wm.removeView(dView);
+    				if(flag){
+    		    wm.removeView(tv);}
+    				else{
+   				wm.removeView(mv);}
     			}
     		}
     	}
+
+		@Override
+		public void onClick(View v) {
+			// TODO Auto-generated method stub
+			
+		}
     	
     	//==
     	
@@ -199,5 +272,16 @@ public class Online_shortservise extends Service{
           return ansString;
       }   
       return null;
-  }   
+  } 
+  
+   public boolean islock(){
+	   KeyguardManager mKeyguardManager = (KeyguardManager) getSystemService(KEYGUARD_SERVICE);  
+	     
+	    if (mKeyguardManager.inKeyguardRestrictedInputMode()) { 
+	        // keyguard on 
+	    	return true;
+	    } 
+	    return false;
+
+   }
 }

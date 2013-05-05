@@ -84,6 +84,7 @@
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentRight="true"
         android:layout_below="@+id/textView3"
@@ -112,9 +113,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_above="@+id/textView3"
+        android:layout_alignTop="@+id/imageButton2"
         android:layout_marginLeft="34dp"
         android:layout_toRightOf="@+id/sinashare"
-        
         android:src="@drawable/renren" />
 
 </RelativeLayout>

@@ -6,6 +6,14 @@ import java.text.SimpleDateFormat;
 
 
 
+import com.renren.api.connect.android.AsyncRenren;
+import com.renren.api.connect.android.Renren;
+import com.renren.api.connect.android.common.AbstractRequestListener;
+import com.renren.api.connect.android.exception.RenrenAuthError;
+import com.renren.api.connect.android.exception.RenrenError;
+import com.renren.api.connect.android.status.StatusSetRequestParam;
+import com.renren.api.connect.android.status.StatusSetResponseBean;
+import com.renren.api.connect.android.view.RenrenAuthListener;
 import com.weibo.sdk.android.Oauth2AccessToken;
 import com.weibo.sdk.android.Weibo;
 import com.weibo.sdk.android.WeiboAuthListener;
@@ -18,10 +26,14 @@ import com.weibo.sdk.android.net.RequestListener;
 import android.R.id;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -42,6 +54,8 @@ public class MainActivity extends Activity {
     public static Oauth2AccessToken accessToken;
     public static final String TAG = "sinasdk";
     Boolean hasver=false;
+    //renren
+    private ProgressDialog progress;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -69,6 +83,8 @@ public class MainActivity extends Activity {
 		newsButton.setOnClickListener(newsClickListener);
 		ImageButton busButton=(ImageButton)findViewById(R.id.bus);
 		busButton.setOnClickListener(busClickListener);
+		ImageButton renrenshare=(ImageButton) findViewById(R.id.renrenshare);
+		renrenshare.setOnClickListener(sharerenren);
 	}
 	
 	public boolean onOptionsItemSelected(MenuItem item){
@@ -195,6 +211,38 @@ public class MainActivity extends Activity {
 	    	
 	    }};
 	    
+	    private OnClickListener sharerenren =new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				if(!isOauthRenren()){
+					Renren renren=new Renren("ea23b38f2a504d5fa74d7f43c5d04e86", "a7046049f1c34d93b67342dcc153d0d2", "233379", MainActivity.this);
+					renren.authorize(MainActivity.this,new MyRenrenListener());
+				}else{
+					Renren renren=new Renren("ea23b38f2a504d5fa74d7f43c5d04e86", "a7046049f1c34d93b67342dcc153d0d2", "233379", MainActivity.this);
+					Toast.makeText(getApplicationContext(), "该用户已经授权", Toast.LENGTH_SHORT).show();
+		
+				StatusSetRequestParam parm=new StatusSetRequestParam("shre");
+//				progress = ProgressDialog.show(MainActivity.this,
+//						"提示", "正在发布，请稍候");
+//				StatusSetListener listener = new StatusSetListener(
+//						MainActivity.this);
+				try {
+//					AsyncRenren aRenren = new AsyncRenren(renren);
+//					aRenren.publishStatus(parm,listener,true);
+					//renren.getSessionKey();
+					//Log.i("tt", renren.getSessionKey());
+					//renren.logout(getApplicationContext());
+					renren.publishStatus(MainActivity.this, parm);
+				} catch (Throwable e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				}
+			}
+		};
+	    
 	  private OnClickListener newsClickListener =new OnClickListener() {
 		
 		@Override
@@ -254,4 +302,146 @@ public class MainActivity extends Activity {
 	         }
 	      
 	         }
+	  
+	  //---
+	  private class StatusSetListener extends
+		AbstractRequestListener<StatusSetResponseBean> {
+
+	private Context context;
+
+	private Handler handler;
+
+	public StatusSetListener(Context context) {
+		this.context = context;
+		this.handler = new Handler(context.getMainLooper());
+	}
+
+	@Override
+	public void onRenrenError(RenrenError renrenError) {
+		final int errorCode = renrenError.getErrorCode();
+		final String errorMsg = renrenError.getMessage();
+		handler.post(new Runnable() {
+			@Override
+			public void run() {
+				if (MainActivity.this != null) {
+					//publishButton.setEnabled(true);
+					//response.setText(errorMsg);
+					if (progress != null) {
+						progress.dismiss();
+					}
+				}
+				if (errorCode == RenrenError.ERROR_CODE_OPERATION_CANCELLED) {
+					Toast.makeText(context, "发送被取消", Toast.LENGTH_SHORT)
+							.show();
+				} else {
+					Toast.makeText(context, "发送失败", Toast.LENGTH_SHORT)
+							.show();
+				}
+			}
+		});
+	}
+
+	@Override
+	public void onFault(Throwable fault) {
+		final String errorMsg = fault.toString();
+		handler.post(new Runnable() {
+
+			@Override
+			public void run() {
+				if (MainActivity.this != null) {
+					//publishButton.setEnabled(true);
+					//response.setText(errorMsg);
+					if (progress != null) {
+						progress.dismiss();
+					}
+				}
+				Toast.makeText(context, "发送失败", Toast.LENGTH_SHORT).show();
+			}
+		});
+	}
+
+	@Override
+	public void onComplete(StatusSetResponseBean bean) {
+		final String responseStr = bean.toString();
+		handler.post(new Runnable() {
+			@Override
+			public void run() {
+				if (MainActivity.this != null) {
+//					response.setText(responseStr);
+//					publishButton.setEnabled(true);
+					if (progress != null) {
+						progress.dismiss();
+					}
+				}
+				Toast.makeText(context, "发送成功", Toast.LENGTH_SHORT).show();
+			}
+		});
+	}
+	
+}
+	  
+	  /**
+	     * renren 判断用户是否已经授权
+	     * @return
+	     */
+	    private boolean isOauthRenren(){
+	    	boolean b = false;
+	    	String token = getSharedPreferences("oauth_renren", Context.MODE_PRIVATE).getString("access_token", "");
+	    	if(!"".equals(token)){
+	    		b = true;
+	    	}
+	    	return b;
+	    }
+	    
+	    /**
+	     * 人人请求用户授权返回界面
+	     * @author yanbin
+	     *
+	     */
+	    private class MyRenrenListener implements RenrenAuthListener{
+
+			@Override
+			public void onComplete(Bundle values) {
+				//服务器端返回的数据
+//				{
+//			    "access_token": "10000|5.a6b7dbd428f731035f771b8d15063f61.86400.1292922000-222209506",
+//			    "expires_in": 87063,
+//			    "refresh_token": "10000|0.385d55f8615fdfd9edb7c4b5ebdc3e39-222209506",
+//			    "scope": "read_user_album read_user_feed"
+//				}
+				Bundle bundle = values;
+				String access_token = bundle.getString("access_token");
+				int expires_in = bundle.getInt("expires_in");
+				String refresh_token = bundle.getString("refresh_token");
+				String scope = bundle.getString("scope");
+				System.out.println("验证服务器端返回的数据-->" + "access_token-->" + access_token
+						+ ",expires_in-->" + expires_in
+						+ ",refresh_token-->" + refresh_token
+						+ ",scope-->" + scope);
+				SharedPreferences sp = getSharedPreferences("oauth_renren", Context.MODE_PRIVATE);
+				sp.edit().putString("access_token", access_token).commit();
+				Toast.makeText(getApplicationContext(), "用户授权成功", Toast.LENGTH_SHORT).show();
+				//结果：
+				//验证服务器端返回的数据-->access_token-->206681|6.725b8c8b3457a7d2953868d63aaf4486.2592000.1346828400-473945629
+				//,expires_in-->0,refresh_token-->null,
+				//scope-->publish_feed create_album photo_upload read_user_album status_update
+			}
+
+			@Override
+			public void onRenrenAuthError(RenrenAuthError renrenAuthError) {
+				Toast.makeText(getApplicationContext(), "异常", Toast.LENGTH_SHORT).show();
+			}
+
+			@Override
+			public void onCancelLogin() {
+				//未作处理
+			}
+
+			@Override
+			public void onCancelAuth(Bundle values) {
+				//未作处理
+			}
+	    	
+	    }
+
 }
